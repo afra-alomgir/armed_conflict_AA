@@ -1,1 +1,2 @@
 # armed_conflict_AA
+this repository is on the analysis of countries suffering from armed conflict based on the study *"Implications of armed conflict for maternal and child health: A regression analysis of data from 181 countries for 2000–2019"* by Jawad M, Hone T, Vamos EP, Cetorelli V, and Millett C (2021). 
