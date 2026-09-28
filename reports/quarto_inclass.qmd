@@ -73,7 +73,6 @@ The **final goal** is to display a **bar chart** that depicts how many countries
 **First**, edit the code chunk below that reads in `countries.txt` to also display the number of rows and columns of the data. 
 
 ```{r}
-#| echo: TRUE
 countries <- read.table("/Users/afraa/Desktop/week2-stat-programming/armed_conflict_AA/data/raw/countries.txt", header = TRUE)
 view(countries)
 glimpse(countries)
