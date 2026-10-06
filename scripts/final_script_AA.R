@@ -120,3 +120,5 @@ final_list <- final_list |> reduce(full_join, by = c("iso", "year"))
 view(final_list)
 write.csv(final_list, "processed/final_list.csv", row.names = FALSE)
 
+#after running the Codex script, I have decided to stay with my own script. 
+#the final csv files seemed to have the same values. 
