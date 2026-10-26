@@ -1,0 +1,15 @@
+---
+title: "EDA - conflict data - AA"
+format: html
+---
+```{r, echo = FALSE}
+library(tidyverse)
+library(naniar)
+
+```
+
+
+```{r}
+df <- read.csv("./data/processed/final_list.csv", header = TRUE)
+
+```

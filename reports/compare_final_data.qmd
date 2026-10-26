@@ -1,0 +1,156 @@
+---
+title: "Comparison of Two Country-Year Data Construction Workflows"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: false
+  warning: false
+---
+
+## Introduction
+
+This report compares [`final_script_AA.R`](../scripts/final_script_AA.R) and
+[`codex_script.R`](../scripts/codex_script.R), which create the country-year
+files `final_list.csv` and `final_data_codex.csv`. It asks whether the two
+workflows produce equivalent analytical data and which is more reproducible.
+The comparison uses `iso` and `year` as the country-year identifier. Neither
+source script nor either output file was changed for this report.
+
+```{r}
+#| label: setup
+#| include: false
+
+processed_dir <- if (dir.exists("data/processed")) "data/processed" else "../data/processed"
+aa <- read.csv(file.path(processed_dir, "final_list.csv"), check.names = FALSE)
+codex <- read.csv(file.path(processed_dir, "final_data_codex.csv"), check.names = FALSE)
+key <- c("iso", "year")
+shared <- merge(aa, codex, by = key, suffixes = c("_aa", "_codex"))
+
+match_fields <- data.frame(
+  AA_output = c("gdp_1000", "oecd", "pop_dens", "urban", "age_dep", "male_edu",
+                "temp", "rainfall_1000", "matmor", "infmor", "neomor", "un5mor",
+                "armed_conflict_lag1"),
+  Codex_output = c("gdp_1000", "oecd", "pop_dens", "urban", "age_dep", "male_edu",
+                   "temp", "rainfall_1000", "maternal_mortality", "infant_mortality",
+                   "neonatal_mortality", "under5_mortality", "armed_conflict")
+)
+mismatch_count <- function(x, y) {
+  same <- (is.na(x) & is.na(y)) | (!is.na(x) & !is.na(y) & x == y)
+  sum(!same)
+}
+match_fields$Mismatched_values <- mapply(
+  function(x, y) mismatch_count(shared[[paste0(x, "_aa")]],
+                                shared[[paste0(y, "_codex")]]),
+  match_fields$AA_output, match_fields$Codex_output
+)
+summary_table <- data.frame(
+  Dataset = c("AA: final_list.csv", "Codex: final_data_codex.csv"),
+  Rows = c(nrow(aa), nrow(codex)), Columns = c(ncol(aa), ncol(codex)),
+  Countries = c(length(unique(aa$iso)), length(unique(codex$iso))),
+  `Year range` = c(paste(range(aa$year), collapse = "–"),
+                   paste(range(codex$year), collapse = "–")),
+  `Duplicate country-year keys` = c(sum(duplicated(aa[key])),
+                                    sum(duplicated(codex[key])))
+)
+```
+
+## Comparison of the Final Data Sets
+
+Table @tbl:overview shows that both files have one observation per observed
+country-year, but they do not contain the same panel. The Codex output covers
+186 countries from 2000 to 2019. The AA output covers 193 countries and also
+includes 1999 observations.
+
+```{r}
+#| label: tbl-overview
+#| tbl-cap: "Structure of the two final data sets."
+summary_table
+```
+
+Every one of the 3,720 Codex country-years occurs in the AA data. AA has 326
+additional country-years: 186 from 1999 and 140 from 2000–2019 for `ASM`,
+`GLP`, `MTQ`, `PLW`, `SCG`, `TUV`, and `TWN`. These seven countries are absent
+from the covariates file. This difference reflects the merge strategy: AA uses
+full joins and retains keys from every source, whereas Codex defines the
+covariates file as the analytical panel and left-joins the remaining sources.
+
+### Agreement in shared variables
+
+The shared panel agrees exactly on all eight covariates, the four mortality
+outcomes, and the lagged armed-conflict indicator. The mortality labels differ
+only in presentation: AA's `matmor`, `infmor`, `neomor`, and `un5mor` equal
+Codex's `maternal_mortality`, `infant_mortality`, `neonatal_mortality`, and
+`under5_mortality`. AA's `armed_conflict_lag1` is identical to Codex's
+`armed_conflict`.
+
+```{r}
+#| label: tbl-matches
+#| tbl-cap: "Value-level comparison on shared country-years."
+match_fields
+```
+
+AA also retains `armed_conflict`, its current-year indicator. This can be
+useful descriptively, but it is distinct from the lagged exposure in the Codex
+final file.
+
+### Disaster indicators
+
+The main difference lies in disaster coding. AA has 1,206 missing values in
+each of `earthquake` and `drought`. Within the shared panel, 1,020 missing AA
+values for each indicator are zero in Codex; none are events in Codex. The
+other 186 missing values occur in AA's extra 1999 observations.
+
+Thus both workflows identify the same positive disaster events. AA treats a
+country-year absent from the filtered disaster file as missing, while Codex
+treats it as no recorded event. For an event-based data source, zero coding is
+preferable: it preserves the covariate panel and prevents otherwise usable
+country-years from being discarded by complete-case analysis.
+
+## Comparison of Data Construction Methods
+
+Both scripts reshape mortality data, derive disaster and conflict indicators,
+and merge them with covariates. Their implementations differ in ways that
+affect portability and interpretation. AA reads directly from `data/raw`, uses
+interactive `View()`/`view()` calls, accepts only mortality columns beginning
+with `X`, and uses abbreviated outcome names. Codex centralizes input reading,
+supports `data/original` with a `data/raw` fallback, recognizes four-digit year
+columns with or without `X`, and uses descriptive outcome names.
+
+The conflict definitions also differ. AA totals deaths within `conflict_id` and
+sets the indicator to one when any individual conflict reaches 25 deaths. Codex
+totals deaths across conflicts within a country-year before applying the
+25-death threshold. The supplied outputs have the same lagged values, but the
+methods could diverge when several lower-fatality conflicts occur in one
+country-year. AA matches a definition based on an individual `conflict_id`;
+Codex matches a definition based on total annual country-level deaths.
+
+Codex also checks duplicate country-year keys and reports dimensions, ranges,
+frequencies, and missingness. It sorts final rows and avoids interactive-only
+operations. AA has no equivalent automated validation, making it harder to
+verify a rerun or identify unexpected changes in inputs.
+
+## Reproducibility Assessment
+
+Overall, **`codex_script.R` is the more reproducible workflow**. It explicitly
+defines the analytical universe, returns the intended 2000–2019 panel, applies
+a consistent no-event rule for disasters, validates country-year keys, and
+provides diagnostics that document the output. It can also run
+non-interactively from the repository root.
+
+AA is still useful as an exploratory workflow and retains a current-year
+conflict variable. Its separate `conflict_id` threshold may be substantively
+preferable if that is the required definition. To be equally reproducible, it
+would need an explicit final-panel rule, the disaster missing-to-zero rule,
+non-interactive execution, and automated validation checks.
+
+## Conclusion
+
+The two workflows produce identical values for all shared covariates, mortality
+outcomes, and lagged armed-conflict values. Their differences concern panel
+construction and the treatment of absent disaster records. The Codex workflow
+is recommended for the final analysis because it builds a complete,
+covariate-based panel through transparent and auditable steps. Before analysis
+is finalized, the project should explicitly state whether the 25-death rule
+applies to each `conflict_id` or to total annual deaths in a country.
