@@ -113,12 +113,17 @@ view(armed_conflict_year)
 
 
 #MERGE#
-final_list <- list(disaster_df_dummy, armed_conflict_year, matmor_long, infmor_long, neonatal_long, un5mor_long)
+covariates_df <- read.csv("./data/raw/covariates.csv", header = TRUE) 
+view(covariates_df)
+
+
+final_list <- list(disaster_df_dummy, armed_conflict_year, matmor_long, infmor_long, neonatal_long, un5mor_long, covariates_df) 
 
 #merge all data frames in list
 final_list <- final_list |> reduce(full_join, by = c("iso", "year")) 
+
 view(final_list)
-write.csv(final_list, "processed/final_list.csv", row.names = FALSE)
+write.csv(final_list, "data/processed/final_list.csv", row.names = FALSE)
 
 #after running the Codex script, I have decided to stay with my own script. 
 #the final csv files seemed to have the same values. 
