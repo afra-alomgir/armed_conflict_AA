@@ -1,15 +1,75 @@
 ---
-title: "EDA - conflict data - AA"
+title: "Exploratory Data Analysis - Armed Conflict"
 format: html
 ---
-```{r, echo = FALSE}
+```{r}
+#| include: false 
+install.packages("tidyverse")
+install.packages("naniar")
+install.packages("quarto")
 library(tidyverse)
 library(naniar)
+library(quarto)
+```
 
+## Load in data
+```{r}
+df <- read.csv("./data/processed/final_list.csv", header = TRUE)
 ```
 
 
+## Inspect the data 
 ```{r}
-df <- read.csv("./data/processed/final_list.csv", header = TRUE)
+head(df)
+glimpse(df)
+sum(duplicated(df))
+names(df)
+summary(df)
+```
+
+## Find the missing data
+```{r}
+colSums(is.na(df))
+sum(is.na(df$armed_conflict))
+sum(is.na(df$year))
+
+table(df$iso[is.na(df$armed_conflict)])
+```
+
+## Examine trends over time
+```{r}
+
+conflict_by_year <- df %>%
+  group_by(year) %>%
+  summarise(
+    total_countries = n(),
+    conflict_cases = sum(armed_conflict == 1, na.rm = TRUE),
+    no_conflict = sum(armed_conflict == 0, na.rm = TRUE),
+    conflict_proportion = mean(armed_conflict == 1, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+#bar chart
+ggplot(conflict_by_year, aes(x = year, y = conflict_cases)) +
+  geom_col() +
+  labs(
+    title = "Number of Countries Experiencing Armed Conflict by Year",
+    x = "Year",
+    y = "Number of Countries"
+  ) +
+  theme_minimal()
+
+#freq variation of armed conflict by country 
+conflict_by_country <- df %>%
+  group_by(iso) %>%
+  summarise(
+    conflict_years = sum(armed_conflict == 1, na.rm = TRUE),
+    total_years = n(),
+    conflict_proportion = mean(armed_conflict == 1, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(conflict_years))
+
 
 ```
