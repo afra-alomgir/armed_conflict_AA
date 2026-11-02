@@ -1,4 +1,6 @@
-suppressPackageStartupMessages({ library(tidyverse); library(ggplot2); library(dplyr); library(table1); library(labelled) })
+suppressPackageStartupMessages({ library(tidyverse); library(ggplot2); library(dplyr); library(table1); library(kableExtra)})
+install.packages("webshot2")
+library(webshot2)
 #Assignment 1
 
 #loading in datasets
@@ -52,9 +54,9 @@ caption <- "Table 1. Characteristics of Country-Year Observations by Armed Confl
 footnote <- "*GDP per capita scaled up by 1,000, OECD = Organisation for Economic Co-operation and Development "
 
 #final optimized table
-table1(~ maternal_mortality + neonatal_mortality + infant_mortality + under5_mortality + earthquake + drought + gdp_1000 + rainfall_1000 + temp + urban + pop_dens + oecd + age_dep + male_edu | 
+table_01_armed_conflict <- table1(~ maternal_mortality + neonatal_mortality + infant_mortality + under5_mortality + earthquake + drought + gdp_1000 + rainfall_1000 + temp + urban + pop_dens + oecd + age_dep + male_edu | 
   armed_conflict, data=final_data_labeled, footnote = footnote, caption = caption)
 
+t1_latex <- t1kable(table_01_armed_conflict)
 
-
-
+t1_latex %>% save_kable("table_01_armed_conflict.pdf")
