@@ -17,13 +17,14 @@ final_data_figure <- final_data %>%
     last(diff_matmor) > 0
   ) %>%
   ungroup()
+#I am including countries that had a net positive in matmor, even if there was fluctuation between the years
 
-
-#line plot
+#line plot that shows increase between 2000-2017 including the fluctutations between the years
 ggplot(data = final_data_figure, aes(x = year, y = maternal_mortality, colour = iso, group = iso)) + 
-  geom_line(data = final_data_figure %>% filter(year %in% c(2000, 2017))) + geom_point(data = final_data_figure %>% filter(year %in% c(2000, 2017)), size = 2) + theme_minimal() +
+  geom_line() + geom_point(size = 1) + theme_minimal() +
   labs(
-    title = "Increasing Maternal Mortality Trends between 2000-2017",
+    title = "Figure 1. Increasing Maternal Mortality Trends between 2000-2017",
     x = "Year",
-    y = "Maternal Mortality",
-    color = "Country")
+    y = "Maternal Mortality (log[10] scale)",
+    color = "Country") + 
+  scale_y_log10()
