@@ -8,7 +8,6 @@ final_data <- read.csv("./data/processed/final_data_codex.csv", header = TRUE)
 #new log transformed variable 
 summary(final_data$gdp_1000) #check for 0 and negative values
 final_data$log_gdp <- log(final_data$gdp_1000)
-view(final_data$armed_conflict)
 
 #panel regressions
 preds <- as.formula("~ armed_conflict + log_gdp + oecd + pop_dens + urban + age_dep + male_edu + temp + rainfall_1000 + earthquake + drought")
