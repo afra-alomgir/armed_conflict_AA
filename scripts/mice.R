@@ -100,11 +100,11 @@ modelsummary(
     "earthquake" = "Earthquake (yes vs no)",
     "drought" = "Drought (yes vs no)"
   ),
-  title = "Table 3. Complete Case Analysis (CCA) and Multiple Imputation Analysis (MIA) Coefficients (95% CI) Comparison for Armed Conflict Data",
+  title = "Table 3. Complete Case Analysis (CCA) and Multiple Imputation Analysis (MIA) Regression Coefficients (95% CI) Comparison for Armed Conflict Data",
   notes = "Estimates are presented as regression coefficients with 95% confidence intervals (CIs). All models were adjusted for armed conflict, gross domestic product (GDP), Organisation for Economic Co-operation and Development (OECD) membership, population density, urban population, age dependency, male education, mean annual temperature, mean annual rainfall, earthquakes, and droughts. 
   Country and year fixed effects were included in all models but are not displayed. 
   Multiple Imputation Analysis (MIA) estimates were obtained by pooling results across 10 imputed datasets using Rubin's rules. Complete Case Analysis (CCA) estimates were obtained using observations with complete data on the variables included in each model. 
-  GDP: gross domestic product; OECD: Organisation for Economic Co-operation and Development; CI: confidence interval.",
+  GDP: gross domestic product; OECD: Organisation for Economic Co-operation and Development.",
   output = "outputs/table_03_MIA_CCA_compare.html"
 )
 
